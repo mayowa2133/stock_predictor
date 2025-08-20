@@ -6,8 +6,16 @@ A Python-based tool that leverages machine learning to forecast future stock pri
 
 - **Real-Time Data:** Integrates with the Yahoo Finance API (`yfinance`) to fetch up-to-date historical stock data.
 - **Feature Engineering:** Creates predictive features from raw data, including Simple Moving Averages (SMA) and volume metrics.
-- **ML Modeling:** Employs a Scikit-learn regression model (e.g., Linear Regression, Random Forest) to train on historical data and make future predictions.
+- **ML Modeling:** Employs a Scikit-learn regression model (e.g., Random Forest) to train on historical data and make future predictions.
 - **Visualization:** Generates plots using Matplotlib to visualize historical prices against the model's forecast.
+
+## Results
+
+After training on 5 years of historical data for AAPL, the model produced the following forecast. The model's performance on the test set was:
+
+- **Root Mean Squared Error (RMSE): $7.38**
+
+![AAPL Stock Price Forecast](./images/prediction_plot.png)
 
 ## How to Run
 
