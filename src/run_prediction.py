@@ -21,10 +21,8 @@ def fetch_data(ticker_symbol, period="5y"):
     print(f"Attempting to pull data for {ticker_symbol}...")
     ticker_data = yf.Ticker(ticker_symbol)
     
-    # Use a try-except block for network errors, etc.
     try:
         df = ticker_data.history(period=period)
-        # yfinance returns an empty DataFrame for invalid tickers
         if df.empty:
             print(f"❌ ERROR: No data found for ticker '{ticker_symbol}'. It may be an invalid symbol.")
             return None
@@ -82,14 +80,16 @@ def make_prediction(model, df, future_days=30):
     
     forecasted_prices = model.predict(X_to_forecast)
     print("--- Forecasted Prices for the next 30 days ---")
-    print(forecasted_prices[:5])
     
     return forecasted_prices
 
 def plot_results(df, forecast, ticker_symbol, future_days=30):
-    """Visualizes the historical data and the forecast."""
+    """
+    Visualizes the historical data and the forecast.
+    IMPORTANT: This version RETURNS the figure object for Streamlit.
+    """
+    fig = plt.figure(figsize=(14, 7)) # Create a figure object
     plt.style.use('dark_background')
-    plt.figure(figsize=(14, 7))
     plt.title(f'{ticker_symbol} Price Prediction')
 
     df['Close'].iloc[-252:].plot(label='Historical Close Price')
@@ -103,10 +103,11 @@ def plot_results(df, forecast, ticker_symbol, future_days=30):
     plt.ylabel('Price (USD)')
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.show()
+    
+    return fig # Return the figure object instead of showing it
 
 def main():
-    """Main function to run the stock prediction pipeline."""
+    """Main function to run the stock prediction pipeline from the command line."""
     ticker_symbol = input("Enter a stock ticker symbol (e.g., MSFT, GOOGL, TSLA): ").upper()
     future_days_to_predict = 30
     
@@ -116,7 +117,10 @@ def main():
         X, y = prepare_data(df_featured, future_days_to_predict)
         trained_model = train_model(X, y)
         forecast = make_prediction(trained_model, df_featured, future_days_to_predict)
-        plot_results(df_featured, forecast, ticker_symbol, future_days_to_predict)
+        
+        # When running from command line, we still want to see the plot
+        fig = plot_results(df_featured, forecast, ticker_symbol, future_days_to_predict)
+        plt.show() # So we call plt.show() here in the main function
 
 if __name__ == "__main__":
     main()
