@@ -2,7 +2,7 @@
 
 An interactive web application built with Python and Streamlit that forecasts future stock prices using a machine learning model. This tool allows users to enter any valid stock ticker and receive a 30-day price prediction visualized alongside historical data.
 
-![Stock Predictor App Screenshot](./images/Streamlit_demo)
+![Stock Predictor App Screenshot](./images/Streamlit_demo.png)
 
 ## Features
 
