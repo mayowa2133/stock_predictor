@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 
-# NEW HELPER FUNCTION
 def calculate_rsi(data, window=14):
     """Calculates the Relative Strength Index (RSI)."""
     delta = data.diff()
@@ -18,15 +17,22 @@ def calculate_rsi(data, window=14):
     return rsi
 
 def fetch_data(ticker_symbol, period="5y"):
-    """Fetches historical stock data from Yahoo Finance."""
+    """Fetches historical stock data from Yahoo Finance with robust error handling."""
     print(f"Attempting to pull data for {ticker_symbol}...")
     ticker_data = yf.Ticker(ticker_symbol)
-    df = ticker_data.history(period=period)
-    if not df.empty:
-        print("✅ Success! Data retrieved.")
-    else:
-        print(f"❌ Failed to retrieve data for {ticker_symbol}.")
+    
+    # Use a try-except block for network errors, etc.
+    try:
+        df = ticker_data.history(period=period)
+        # yfinance returns an empty DataFrame for invalid tickers
+        if df.empty:
+            print(f"❌ ERROR: No data found for ticker '{ticker_symbol}'. It may be an invalid symbol.")
+            return None
+    except Exception as e:
+        print(f"❌ ERROR: An exception occurred: {e}")
         return None
+        
+    print("✅ Success! Data retrieved.")
     return df
 
 def engineer_features(df, future_days=30):
@@ -34,11 +40,8 @@ def engineer_features(df, future_days=30):
     df['SMA_20'] = df['Close'].rolling(window=20).mean()
     df['SMA_50'] = df['Close'].rolling(window=50).mean()
     df['Volume_Change'] = df['Volume'].pct_change()
-    
-    # -- ADD RSI CALCULATION --
     df['RSI'] = calculate_rsi(df['Close'])
     
-    # The target variable we want to predict
     df['Prediction'] = df['Close'].shift(-future_days)
     
     print("--- Features and Target engineered (with RSI) ---")
@@ -46,7 +49,7 @@ def engineer_features(df, future_days=30):
 
 def prepare_data(df, future_days=30):
     """Prepares the data for training by creating X and y sets."""
-    features = ['Close', 'SMA_20', 'SMA_50', 'Volume_Change', 'RSI'] # <-- RSI ADDED
+    features = ['Close', 'SMA_20', 'SMA_50', 'Volume_Change', 'RSI']
     X = df[features]
     
     X = X.iloc[:-future_days]
@@ -73,7 +76,7 @@ def train_model(X, y):
 
 def make_prediction(model, df, future_days=30):
     """Uses the trained model to forecast future prices."""
-    features = ['Close', 'SMA_20', 'SMA_50', 'Volume_Change', 'RSI'] # <-- RSI ADDED
+    features = ['Close', 'SMA_20', 'SMA_50', 'Volume_Change', 'RSI']
     
     X_to_forecast = df[features].iloc[-future_days:]
     
@@ -104,7 +107,7 @@ def plot_results(df, forecast, ticker_symbol, future_days=30):
 
 def main():
     """Main function to run the stock prediction pipeline."""
-    ticker_symbol = 'AAPL'
+    ticker_symbol = input("Enter a stock ticker symbol (e.g., MSFT, GOOGL, TSLA): ").upper()
     future_days_to_predict = 30
     
     stock_df = fetch_data(ticker_symbol)
